@@ -1,9 +1,9 @@
 import './styles.css';
-import { services, deliverables, comparison, processSteps, packages } from './data/services.js';
+import { growthSignals, packageOptions, packageResults, processSteps, productTabs } from './data/services.js';
 import { initHeaderState, initReveals } from './utils/motion.js';
 import { createSporeNetwork } from './three/sporeNetwork.js';
 
-const whatsappHref = 'https://wa.me/910000000000?text=Hi%20Myco%20Labs%2C%20I%20want%20to%20discuss%20A2%20Manufacturer%20Digital%20Presence%20Pack.';
+const whatsappHref = 'https://wa.me/910000000000?text=Hi%20Myco%20Labs%2C%20I%20want%20to%20discuss%20a%20digital%20growth%20package%20for%20my%20manufacturing%20business.';
 
 function escapeHtml(value) {
   return value
@@ -14,45 +14,121 @@ function escapeHtml(value) {
     .replaceAll("'", '&#039;');
 }
 
-function renderServices() {
-  const target = document.querySelector('[data-services]');
-  target.innerHTML = services.map((service, index) => `
-    <article class="service-card reveal ${service.featured ? 'is-featured' : ''}" style="--delay: ${index * 70}ms">
-      <div class="card-kicker">${escapeHtml(service.label)}</div>
-      <h3>${escapeHtml(service.title)}</h3>
-      <p>${escapeHtml(service.summary)}</p>
-      <span class="card-accent">${escapeHtml(service.accent)}</span>
+function renderExamples(examples) {
+  return examples.map((item) => `
+    <article class="mini-product-card">
+      <h4>${escapeHtml(item.name)}</h4>
+      <p>${escapeHtml(item.description)}</p>
     </article>
   `).join('');
 }
 
-function renderDeliverables() {
-  const target = document.querySelector('[data-deliverables]');
-  target.innerHTML = deliverables.map((item, index) => `
-    <article class="deliverable-card reveal" style="--delay: ${index * 80}ms">
-      <span class="node-dot" aria-hidden="true"></span>
-      <h3>${escapeHtml(item.title)}</h3>
-      <p>${escapeHtml(item.summary)}</p>
-    </article>
-  `).join('');
-}
-
-function renderComparison() {
-  const target = document.querySelector('[data-comparison]');
-  const list = (items) => items.map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+function renderProductDetail(product) {
+  const target = document.querySelector('[data-product-detail]');
   target.innerHTML = `
-    <div class="comparison-column before">
-      <span class="comparison-label">Before</span>
-      <h3>Scattered presence</h3>
-      <ul>${list(comparison.before)}</ul>
-    </div>
-    <div class="comparison-divider" aria-hidden="true"></div>
-    <div class="comparison-column after">
-      <span class="comparison-label">After</span>
-      <h3>Buyer-ready system</h3>
-      <ul>${list(comparison.after)}</ul>
-    </div>
+    <article class="product-detail-card reveal is-visible" data-product-panel="${escapeHtml(product.id)}">
+      <span class="card-kicker">${escapeHtml(product.kicker)}</span>
+      <h3 data-product-title>${escapeHtml(product.title)}</h3>
+      <p>${escapeHtml(product.summary)}</p>
+      <div class="chip-row">
+        ${product.chips.map((chip) => `<span>${escapeHtml(chip)}</span>`).join('')}
+      </div>
+      <div class="example-stack">
+        ${renderExamples(product.examples)}
+      </div>
+      <a class="button button-primary product-cta" href="${whatsappHref}" target="_blank" rel="noreferrer">
+        Discuss ${escapeHtml(product.featured)}
+      </a>
+    </article>
   `;
+}
+
+function setActiveProduct(productId, network) {
+  const product = productTabs.find((item) => item.id === productId) || productTabs[0];
+  document.querySelectorAll('[data-product-tab]').forEach((button) => {
+    const active = button.dataset.productTab === product.id;
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
+  renderProductDetail(product);
+  network?.setFocus?.(product.id);
+}
+
+function renderProducts(network) {
+  const tabsTarget = document.querySelector('[data-product-tabs]');
+  tabsTarget.innerHTML = productTabs.map((product, index) => `
+    <button
+      class="product-tab ${index === 0 ? 'is-active' : ''}"
+      type="button"
+      data-product-tab="${escapeHtml(product.id)}"
+      aria-selected="${index === 0 ? 'true' : 'false'}"
+    >
+      <span>${String(index + 1).padStart(2, '0')}</span>
+      ${escapeHtml(product.label)}
+    </button>
+  `).join('');
+
+  tabsTarget.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-product-tab]');
+    if (!button) return;
+    setActiveProduct(button.dataset.productTab, network);
+  });
+
+  const menuTarget = document.querySelector('[data-product-menu]');
+  menuTarget.innerHTML = productTabs.map((group, index) => `
+    <article class="product-menu-card reveal" style="--delay: ${index * 70}ms">
+      <span class="card-kicker">${escapeHtml(group.title)}</span>
+      <h3>${escapeHtml(group.featured)}</h3>
+      <ul>
+        ${group.examples.map((item) => `<li>${escapeHtml(item.name)}</li>`).join('')}
+      </ul>
+    </article>
+  `).join('');
+
+  renderProductDetail(productTabs[0]);
+}
+
+function selectPackage(selected) {
+  if (selected.length >= 5) {
+    return packageResults.find((result) => result.id === 'full');
+  }
+  if (selected.includes('automation') || selected.includes('whatsapp')) {
+    return packageResults.find((result) => result.id === 'automation-growth');
+  }
+  if (selected.includes('catalogue') && selected.includes('website')) {
+    return packageResults.find((result) => result.id === 'catalogue-growth');
+  }
+  return packageResults.find((result) => result.id === 'starter');
+}
+
+function updatePackageResult() {
+  const selected = Array.from(document.querySelectorAll('[data-package-option]:checked')).map((input) => input.value);
+  const result = selectPackage(selected);
+  document.querySelector('[data-package-result]').textContent = result.name;
+  document.querySelector('[data-package-summary]').textContent = result.summary;
+  document.querySelector('[data-package-count]').textContent = `${selected.length} selected`;
+}
+
+function renderPackageMaker() {
+  const target = document.querySelector('[data-package-options]');
+  target.innerHTML = packageOptions.map((option, index) => `
+    <label class="package-option reveal" style="--delay: ${index * 55}ms">
+      <input
+        type="checkbox"
+        value="${escapeHtml(option.id)}"
+        data-package-option
+        ${option.defaultChecked ? 'checked' : ''}
+      />
+      <span class="option-control" aria-hidden="true"></span>
+      <span>
+        <strong>${escapeHtml(option.label)}</strong>
+        <small>${escapeHtml(option.description)}</small>
+      </span>
+    </label>
+  `).join('');
+
+  target.addEventListener('change', updatePackageResult);
+  updatePackageResult();
 }
 
 function renderProcess() {
@@ -65,32 +141,27 @@ function renderProcess() {
   `).join('');
 }
 
-function renderPackages() {
-  const target = document.querySelector('[data-packages]');
-  target.innerHTML = packages.map((pack, index) => `
-    <article class="package-card reveal ${pack.featured ? 'is-featured' : ''}" style="--delay: ${index * 90}ms">
-      <span class="package-note">${escapeHtml(pack.note)}</span>
-      <h3>${escapeHtml(pack.name)}</h3>
-      <p class="package-price">${escapeHtml(pack.price)}</p>
-      <ul>${pack.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join('')}</ul>
-      <a class="button ${pack.featured ? 'button-primary' : 'button-secondary'}" href="${whatsappHref}" target="_blank" rel="noreferrer">
-        Ask about ${escapeHtml(pack.name)}
-      </a>
+function renderGrowthSignals() {
+  const target = document.querySelector('[data-growth-signals]');
+  target.innerHTML = growthSignals.map((signal, index) => `
+    <article class="growth-card reveal" style="--delay: ${index * 85}ms">
+      <span class="node-dot" aria-hidden="true"></span>
+      <h3>${escapeHtml(signal.title)}</h3>
+      <p>${escapeHtml(signal.description)}</p>
     </article>
   `).join('');
 }
 
 function init() {
-  renderServices();
-  renderDeliverables();
-  renderComparison();
-  renderProcess();
-  renderPackages();
-  initHeaderState();
-  initReveals();
-
   const canvas = document.querySelector('#hero-canvas');
   const network = createSporeNetwork(canvas);
+
+  renderProducts(network);
+  renderPackageMaker();
+  renderProcess();
+  renderGrowthSignals();
+  initHeaderState();
+  initReveals();
 
   window.addEventListener('pagehide', () => network.destroy(), { once: true });
 }

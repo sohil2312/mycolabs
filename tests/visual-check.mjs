@@ -45,7 +45,8 @@ async function inspect(page, name, viewport) {
     const header = document.querySelector('[data-site-header]').getBoundingClientRect();
     const heroTitle = document.querySelector('#hero-title').getBoundingClientRect();
     const cta = document.querySelector('.hero-actions').getBoundingClientRect();
-    const services = document.querySelector('#services').getBoundingClientRect();
+    const products = document.querySelector('#products').getBoundingClientRect();
+    const activeTab = document.querySelector('[data-product-tab][aria-selected="true"]')?.textContent?.trim() || '';
 
     return {
       canvasWidth: canvas.width,
@@ -56,7 +57,8 @@ async function inspect(page, name, viewport) {
       header,
       heroTitle,
       cta,
-      services,
+      products,
+      activeTab,
       scrollWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth
     };
@@ -64,26 +66,36 @@ async function inspect(page, name, viewport) {
 
   await page.screenshot({ path: `test-artifacts/${name}.png`, fullPage: true });
 
-  await page.locator('#services').scrollIntoViewIfNeeded();
+  await page.locator('#products').scrollIntoViewIfNeeded();
   await page.waitForTimeout(850);
-  const servicesState = await page.evaluate(() => {
-    const card = document.querySelector('.service-card');
+  const productsState = await page.evaluate(() => {
+    const card = document.querySelector('.product-detail-card');
     const rect = card.getBoundingClientRect();
     return {
       visible: rect.top < window.innerHeight && rect.bottom > 0 && getComputedStyle(card).opacity !== '0',
+      activeTitle: document.querySelector('[data-product-title]')?.textContent?.trim() || '',
       top: rect.top,
       bottom: rect.bottom
     };
   });
   await page.screenshot({ path: `test-artifacts/${name}-services.png` });
 
-  await page.locator('#packages').scrollIntoViewIfNeeded();
+  await page.locator('[data-product-tab="catalogue"]').click();
+  await page.waitForTimeout(350);
+  const tabState = await page.evaluate(() => ({
+    activeTab: document.querySelector('[data-product-tab][aria-selected="true"]')?.textContent?.trim() || '',
+    activeTitle: document.querySelector('[data-product-title]')?.textContent?.trim() || ''
+  }));
+
+  await page.locator('#package-maker').scrollIntoViewIfNeeded();
   await page.waitForTimeout(850);
-  const packagesState = await page.evaluate(() => {
-    const card = document.querySelector('.package-card.is-featured');
+  const packageState = await page.evaluate(() => {
+    const card = document.querySelector('.package-maker-card');
     const rect = card.getBoundingClientRect();
     return {
       visible: rect.top < window.innerHeight && rect.bottom > 0 && getComputedStyle(card).opacity !== '0',
+      selectedCount: document.querySelectorAll('[data-package-option]:checked').length,
+      result: document.querySelector('[data-package-result]')?.textContent?.trim() || '',
       top: rect.top,
       bottom: rect.bottom
     };
@@ -93,8 +105,9 @@ async function inspect(page, name, viewport) {
   return {
     first,
     second: { samples: result.samples, frames: result.frames, rotation: result.rotation },
-    servicesState,
-    packagesState,
+    productsState,
+    tabState,
+    packageState,
     ...result
   };
 }
@@ -130,9 +143,14 @@ async function main() {
     if (result.scrollWidth > result.viewportWidth + 2) failures.push(`${name}: horizontal scroll detected`);
     if (result.heroTitle.right > result.viewportWidth + 2 || result.heroTitle.left < -2) failures.push(`${name}: hero title outside viewport`);
     if (result.cta.right > result.viewportWidth + 2 || result.cta.left < -2) failures.push(`${name}: hero CTA outside viewport`);
-    if (result.services.top < result.header.bottom && result.services.bottom > result.header.top) failures.push(`${name}: header overlaps services at load`);
-    if (!result.servicesState.visible) failures.push(`${name}: service cards not visible after scroll`);
-    if (!result.packagesState.visible) failures.push(`${name}: featured package not visible after scroll`);
+    if (result.products.top < result.header.bottom && result.products.bottom > result.header.top) failures.push(`${name}: header overlaps products at load`);
+    if (!result.productsState.visible) failures.push(`${name}: product cards not visible after scroll`);
+    if (!result.productsState.activeTitle.includes('Website Building')) failures.push(`${name}: default product tab content missing`);
+    if (!result.tabState.activeTab.includes('Catalogue')) failures.push(`${name}: catalogue tab did not become active`);
+    if (!result.tabState.activeTitle.includes('Catalogue Building')) failures.push(`${name}: catalogue tab content missing`);
+    if (!result.packageState.visible) failures.push(`${name}: package maker not visible after scroll`);
+    if (result.packageState.selectedCount < 2) failures.push(`${name}: package maker default selections missing`);
+    if (!result.packageState.result.includes('Full Digital Presence Pack')) failures.push(`${name}: package maker result missing`);
   }
   if (errors.length) failures.push(`console errors: ${errors.join(' | ')}`);
 

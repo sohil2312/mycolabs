@@ -9,17 +9,30 @@ async function inspectViewport(page, viewport) {
 
   return page.evaluate(() => {
     const canvas = document.querySelector('#hero-canvas');
-    const sections = ['services', 'a2-pack', 'process', 'packages', 'contact'];
+    const sections = ['products', 'package-maker', 'process', 'growth', 'contact'];
     const requiredText = [
-      'Digital presence for Gujarat manufacturers',
-      'A2 - Manufacturer Digital Presence Pack',
-      'Google Business Profile Boost',
+      'Digital growth tools for Gujarat manufacturers',
+      'Built for manufacturers across Gujarat',
+      'Website Building',
+      'Catalogue Building',
+      'WhatsApp Bots & Automation',
+      'IndiaMART Improvement',
+      'Google Business Profile Improvement',
+      'SEO Starter Pack',
+      'Package Maker',
+      'Full Digital Presence Pack'
+    ];
+    const forbiddenText = [
+      'Idar + Himatnagar',
+      'Simple pricing',
+      'Rs ',
+      '₹',
       'Compliance Docs Pack',
       'HR/Payroll Compliance',
       'Loan/CMA/Project Report',
-      'Industrial WhatsApp Catalog',
-      'Premium'
+      'A2 - Manufacturer Digital Presence Pack'
     ];
+    const bodyText = document.body.textContent;
 
     return {
       title: document.title,
@@ -27,7 +40,11 @@ async function inspectViewport(page, viewport) {
       canvasHeight: canvas?.height || 0,
       canvasVisible: !!canvas && getComputedStyle(canvas).display !== 'none',
       missingSections: sections.filter((id) => !document.getElementById(id)),
-      missingText: requiredText.filter((text) => !document.body.innerText.includes(text)),
+      missingText: requiredText.filter((text) => !bodyText.includes(text)),
+      forbiddenText: forbiddenText.filter((text) => bodyText.includes(text)),
+      productTabCount: document.querySelectorAll('[data-product-tab]').length,
+      packageMakerCheckedCount: document.querySelectorAll('[data-package-option]:checked').length,
+      packageSuggestion: document.querySelector('[data-package-result]')?.textContent?.trim() || '',
       hasHorizontalScroll: document.documentElement.scrollWidth > window.innerWidth + 2
     };
   });
@@ -54,6 +71,10 @@ async function main() {
     if (!result.canvasWidth || !result.canvasHeight || !result.canvasVisible) failures.push(`${name}: canvas missing or hidden`);
     if (result.missingSections.length) failures.push(`${name}: missing sections ${result.missingSections.join(', ')}`);
     if (result.missingText.length) failures.push(`${name}: missing text ${result.missingText.join(', ')}`);
+    if (result.forbiddenText.length) failures.push(`${name}: forbidden text still visible ${result.forbiddenText.join(', ')}`);
+    if (result.productTabCount < 5) failures.push(`${name}: product tabs missing`);
+    if (result.packageMakerCheckedCount < 2) failures.push(`${name}: package maker defaults missing`);
+    if (!result.packageSuggestion.includes('Full Digital Presence Pack')) failures.push(`${name}: package suggestion missing expected default`);
     if (result.hasHorizontalScroll) failures.push(`${name}: horizontal scroll detected`);
   }
 
