@@ -55,4 +55,4 @@
 - [x] Run final `npm run build`.
 - [x] Run final `npm run test:smoke`.
 - [x] Run final `npm run test:visual`.
-- [ ] Commit implementation with message `feat: revise myco labs product website`.
+- [x] Commit implementation with message `feat: revise myco labs product website`.
