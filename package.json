@@ -1,0 +1,19 @@
+{
+  "name": "mycolabs-3d-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test:smoke": "node tests/site-smoke.test.mjs",
+    "test:visual": "node tests/visual-check.mjs"
+  },
+  "dependencies": {
+    "vite": "^7.2.7",
+    "three": "^0.181.2",
+    "playwright": "^1.57.0"
+  },
+  "devDependencies": {}
+}
