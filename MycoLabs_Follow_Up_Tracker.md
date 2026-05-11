@@ -44,6 +44,7 @@ Use this simple flow when speaking with a manufacturer:
 | `[x]` | Desktop hero shows 3D animation and Gujarat-wide message. |
 | `[x]` | Mobile hero keeps visible 3D motion. |
 | `[x]` | Product tabs are clickable. |
+| `[x]` | Mobile product details open directly below the selected product. |
 | `[x]` | Package Maker returns `Full Digital Presence Pack` by default. |
 | `[x]` | Public site has no city-only offer language. |
 | `[x]` | Public site has no fixed public amounts. |

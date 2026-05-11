@@ -54,11 +54,13 @@ The site should not position Myco Labs as serving only one city cluster. It shou
 
 - Hero uses a fixed full-screen Three.js product-orbit scene.
 - Product tabs control the active content and steer the 3D focus.
+- On mobile, products behave as an accordion: tapping a product opens its details directly below that product, not below the full list.
 - Package Maker replaces fixed public amounts:
   - Visitors select Website, Catalogue, WhatsApp Bot, IndiaMART, Google Business Profile, SEO, and Automation Tool.
   - The site suggests `Starter Digital Pack`, `Catalogue Growth Pack`, `Automation Growth Pack`, or `Full Digital Presence Pack`.
   - CTA: `Discuss this package on WhatsApp`.
 - Cards, tabs, and sections use subtle reveal, hover, and active-state animation.
+- The hero headline, copy, CTA, chips, and Three.js scene animate in the first view.
 - Mobile keeps the Three.js scene visible with reduced node count and simpler layout.
 - `prefers-reduced-motion` is respected.
 

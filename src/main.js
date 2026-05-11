@@ -23,10 +23,9 @@ function renderExamples(examples) {
   `).join('');
 }
 
-function renderProductDetail(product) {
-  const target = document.querySelector('[data-product-detail]');
-  target.innerHTML = `
-    <article class="product-detail-card reveal is-visible" data-product-panel="${escapeHtml(product.id)}">
+function renderProductCard(product, extraClass = '') {
+  return `
+    <article class="product-detail-card ${extraClass}" data-product-panel="${escapeHtml(product.id)}">
       <span class="card-kicker">${escapeHtml(product.kicker)}</span>
       <h3 data-product-title>${escapeHtml(product.title)}</h3>
       <p>${escapeHtml(product.summary)}</p>
@@ -43,12 +42,20 @@ function renderProductDetail(product) {
   `;
 }
 
+function renderProductDetail(product) {
+  const target = document.querySelector('[data-product-detail]');
+  target.innerHTML = renderProductCard(product, 'reveal is-visible');
+}
+
 function setActiveProduct(productId, network) {
   const product = productTabs.find((item) => item.id === productId) || productTabs[0];
   document.querySelectorAll('[data-product-tab]').forEach((button) => {
     const active = button.dataset.productTab === product.id;
     button.classList.toggle('is-active', active);
     button.setAttribute('aria-selected', String(active));
+  });
+  document.querySelectorAll('[data-product-mobile-panel]').forEach((panel) => {
+    panel.classList.toggle('is-active', panel.dataset.productMobilePanel === product.id);
   });
   renderProductDetail(product);
   network?.setFocus?.(product.id);
@@ -57,15 +64,20 @@ function setActiveProduct(productId, network) {
 function renderProducts(network) {
   const tabsTarget = document.querySelector('[data-product-tabs]');
   tabsTarget.innerHTML = productTabs.map((product, index) => `
-    <button
-      class="product-tab ${index === 0 ? 'is-active' : ''}"
-      type="button"
-      data-product-tab="${escapeHtml(product.id)}"
-      aria-selected="${index === 0 ? 'true' : 'false'}"
-    >
-      <span>${String(index + 1).padStart(2, '0')}</span>
-      ${escapeHtml(product.label)}
-    </button>
+    <div class="product-accordion-item">
+      <button
+        class="product-tab ${index === 0 ? 'is-active' : ''}"
+        type="button"
+        data-product-tab="${escapeHtml(product.id)}"
+        aria-selected="${index === 0 ? 'true' : 'false'}"
+      >
+        <span>${String(index + 1).padStart(2, '0')}</span>
+        ${escapeHtml(product.label)}
+      </button>
+      <div class="product-mobile-panel ${index === 0 ? 'is-active' : ''}" data-product-mobile-panel="${escapeHtml(product.id)}">
+        ${renderProductCard(product, 'product-mobile-card')}
+      </div>
+    </div>
   `).join('');
 
   tabsTarget.addEventListener('click', (event) => {
@@ -73,17 +85,6 @@ function renderProducts(network) {
     if (!button) return;
     setActiveProduct(button.dataset.productTab, network);
   });
-
-  const menuTarget = document.querySelector('[data-product-menu]');
-  menuTarget.innerHTML = productTabs.map((group, index) => `
-    <article class="product-menu-card reveal" style="--delay: ${index * 70}ms">
-      <span class="card-kicker">${escapeHtml(group.title)}</span>
-      <h3>${escapeHtml(group.featured)}</h3>
-      <ul>
-        ${group.examples.map((item) => `<li>${escapeHtml(item.name)}</li>`).join('')}
-      </ul>
-    </article>
-  `).join('');
 
   renderProductDetail(productTabs[0]);
 }

@@ -54,6 +54,7 @@ The public website should not position the offer as city-only. Local relationshi
 - Vite + vanilla JavaScript + Three.js site exists.
 - Hero uses interactive 3D product-orbit animation.
 - Product tabs control website, catalogue, WhatsApp, growth, and tools content.
+- Mobile product rows open details immediately below the selected product.
 - Package Maker replaces fixed public amount tables.
 - Desktop and mobile verification are covered by Playwright scripts.
 

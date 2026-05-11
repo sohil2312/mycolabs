@@ -14,8 +14,8 @@ async function inspect(page, name, viewport) {
     const canvas = document.querySelector('#hero-canvas');
     const context = canvas.getContext('webgl2') || canvas.getContext('webgl');
     const samples = [];
-    for (const xRatio of [0.18, 0.32, 0.48, 0.64, 0.78, 0.9]) {
-      for (const yRatio of [0.16, 0.28, 0.42, 0.58, 0.72, 0.86]) {
+    for (const xRatio of [0.14, 0.28, 0.42, 0.5, 0.58, 0.72, 0.86]) {
+      for (const yRatio of [0.14, 0.26, 0.34, 0.42, 0.54, 0.66, 0.78, 0.9]) {
         const pixels = new Uint8Array(4);
         context.readPixels(Math.floor(canvas.width * xRatio), Math.floor(canvas.height * yRatio), 1, 1, context.RGBA, context.UNSIGNED_BYTE, pixels);
         samples.push(Array.from(pixels));
@@ -34,8 +34,8 @@ async function inspect(page, name, viewport) {
     const canvas = document.querySelector('#hero-canvas');
     const context = canvas.getContext('webgl2') || canvas.getContext('webgl');
     const samples = [];
-    for (const xRatio of [0.18, 0.32, 0.48, 0.64, 0.78, 0.9]) {
-      for (const yRatio of [0.16, 0.28, 0.42, 0.58, 0.72, 0.86]) {
+    for (const xRatio of [0.14, 0.28, 0.42, 0.5, 0.58, 0.72, 0.86]) {
+      for (const yRatio of [0.14, 0.26, 0.34, 0.42, 0.54, 0.66, 0.78, 0.9]) {
         const pixels = new Uint8Array(4);
         context.readPixels(Math.floor(canvas.width * xRatio), Math.floor(canvas.height * yRatio), 1, 1, context.RGBA, context.UNSIGNED_BYTE, pixels);
         samples.push(Array.from(pixels));
@@ -69,11 +69,14 @@ async function inspect(page, name, viewport) {
   await page.locator('#products').scrollIntoViewIfNeeded();
   await page.waitForTimeout(850);
   const productsState = await page.evaluate(() => {
-    const card = document.querySelector('.product-detail-card');
+    const isMobile = window.matchMedia('(max-width: 920px)').matches;
+    const card = isMobile
+      ? document.querySelector('[data-product-mobile-panel].is-active .product-detail-card')
+      : document.querySelector('[data-product-detail] .product-detail-card');
     const rect = card.getBoundingClientRect();
     return {
       visible: rect.top < window.innerHeight && rect.bottom > 0 && getComputedStyle(card).opacity !== '0',
-      activeTitle: document.querySelector('[data-product-title]')?.textContent?.trim() || '',
+      activeTitle: card.querySelector('[data-product-title]')?.textContent?.trim() || '',
       top: rect.top,
       bottom: rect.bottom
     };
@@ -82,10 +85,24 @@ async function inspect(page, name, viewport) {
 
   await page.locator('[data-product-tab="catalogue"]').click();
   await page.waitForTimeout(350);
-  const tabState = await page.evaluate(() => ({
-    activeTab: document.querySelector('[data-product-tab][aria-selected="true"]')?.textContent?.trim() || '',
-    activeTitle: document.querySelector('[data-product-title]')?.textContent?.trim() || ''
-  }));
+  const tabState = await page.evaluate(() => {
+    const isMobile = window.matchMedia('(max-width: 920px)').matches;
+    const activeButton = document.querySelector('[data-product-tab][aria-selected="true"]');
+    const mobilePanel = document.querySelector('[data-product-mobile-panel].is-active');
+    const desktopTitle = document.querySelector('[data-product-detail] [data-product-title]')?.textContent?.trim() || '';
+    const activeTitle = isMobile
+      ? mobilePanel?.querySelector('[data-product-title]')?.textContent?.trim() || ''
+      : desktopTitle;
+    const buttonRect = activeButton?.getBoundingClientRect();
+    const panelRect = mobilePanel?.getBoundingClientRect();
+
+    return {
+      activeTab: activeButton?.textContent?.trim() || '',
+      activeTitle,
+      mobilePanelVisible: !!mobilePanel && getComputedStyle(mobilePanel).display !== 'none' && panelRect.bottom > 0 && panelRect.top < window.innerHeight,
+      mobilePanelGap: buttonRect && panelRect ? panelRect.top - buttonRect.bottom : null
+    };
+  });
 
   await page.locator('#package-maker').scrollIntoViewIfNeeded();
   await page.waitForTimeout(850);
@@ -148,6 +165,8 @@ async function main() {
     if (!result.productsState.activeTitle.includes('Website Building')) failures.push(`${name}: default product tab content missing`);
     if (!result.tabState.activeTab.includes('Catalogue')) failures.push(`${name}: catalogue tab did not become active`);
     if (!result.tabState.activeTitle.includes('Catalogue Building')) failures.push(`${name}: catalogue tab content missing`);
+    if (name === 'mobile' && !result.tabState.mobilePanelVisible) failures.push(`${name}: active mobile product detail is not visible below selected product`);
+    if (name === 'mobile' && (result.tabState.mobilePanelGap === null || result.tabState.mobilePanelGap > 24)) failures.push(`${name}: active product detail is too far from selected product`);
     if (!result.packageState.visible) failures.push(`${name}: package maker not visible after scroll`);
     if (result.packageState.selectedCount < 2) failures.push(`${name}: package maker default selections missing`);
     if (!result.packageState.result.includes('Full Digital Presence Pack')) failures.push(`${name}: package maker result missing`);
