@@ -28,6 +28,7 @@ function renderProductCard(product, extraClass = '') {
     <article class="product-detail-card ${extraClass}" data-product-panel="${escapeHtml(product.id)}">
       <span class="card-kicker">${escapeHtml(product.kicker)}</span>
       <h3 data-product-title>${escapeHtml(product.title)}</h3>
+      <strong class="category-label">${escapeHtml(product.categoryLabel)}</strong>
       <p>${escapeHtml(product.summary)}</p>
       <div class="chip-row">
         ${product.chips.map((chip) => `<span>${escapeHtml(chip)}</span>`).join('')}
@@ -57,8 +58,39 @@ function setActiveProduct(productId, network) {
   document.querySelectorAll('[data-product-mobile-panel]').forEach((panel) => {
     panel.classList.toggle('is-active', panel.dataset.productMobilePanel === product.id);
   });
+  document.querySelectorAll('[data-hero-focus-tab]').forEach((button) => {
+    const active = button.dataset.heroFocusTab === product.id;
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  const statusLabel = document.querySelector('[data-hero-status-label]');
+  const statusSummary = document.querySelector('[data-hero-status-summary]');
+  if (statusLabel) statusLabel.textContent = product.title;
+  if (statusSummary) statusSummary.textContent = `${product.categoryLabel} connected to ${product.sceneLabel.toLowerCase()}.`;
   renderProductDetail(product);
   network?.setFocus?.(product.id);
+}
+
+function renderHeroFocusTabs(network) {
+  const target = document.querySelector('[data-hero-focus-tabs]');
+  target.innerHTML = productTabs.map((product, index) => `
+    <button
+      class="hero-focus-tab ${index === 0 ? 'is-active' : ''}"
+      type="button"
+      data-hero-focus-tab="${escapeHtml(product.id)}"
+      aria-pressed="${index === 0 ? 'true' : 'false'}"
+    >
+      <span>${String(index + 1).padStart(2, '0')}</span>
+      ${escapeHtml(product.label)}
+    </button>
+  `).join('');
+
+  target.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-hero-focus-tab]');
+    if (!button) return;
+    setActiveProduct(button.dataset.heroFocusTab, network);
+    document.querySelector('#products')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 function renderProducts(network) {
@@ -103,11 +135,20 @@ function selectPackage(selected) {
 }
 
 function updatePackageResult() {
-  const selected = Array.from(document.querySelectorAll('[data-package-option]:checked')).map((input) => input.value);
+  const selectedInputs = Array.from(document.querySelectorAll('[data-package-option]:checked'));
+  const selected = selectedInputs.map((input) => input.value);
   const result = selectPackage(selected);
   document.querySelector('[data-package-result]').textContent = result.name;
   document.querySelector('[data-package-summary]').textContent = result.summary;
   document.querySelector('[data-package-count]').textContent = `${selected.length} selected`;
+  document.querySelectorAll('.package-option').forEach((option) => {
+    const input = option.querySelector('[data-package-option]');
+    option.classList.toggle('is-selected', Boolean(input?.checked));
+  });
+  const selectedTarget = document.querySelector('[data-package-selected]');
+  selectedTarget.innerHTML = selectedInputs.map((input) => `
+    <span data-selection-pill>${escapeHtml(input.dataset.packageLabel || input.value)}</span>
+  `).join('');
 }
 
 function renderPackageMaker() {
@@ -118,6 +159,7 @@ function renderPackageMaker() {
         type="checkbox"
         value="${escapeHtml(option.id)}"
         data-package-option
+        data-package-label="${escapeHtml(option.label)}"
         ${option.defaultChecked ? 'checked' : ''}
       />
       <span class="option-control" aria-hidden="true"></span>
@@ -157,6 +199,7 @@ function init() {
   const canvas = document.querySelector('#hero-canvas');
   const network = createSporeNetwork(canvas);
 
+  renderHeroFocusTabs(network);
   renderProducts(network);
   renderPackageMaker();
   renderProcess();

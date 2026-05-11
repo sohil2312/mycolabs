@@ -13,13 +13,22 @@ async function inspectViewport(page, viewport) {
     const requiredText = [
       'Digital growth tools for Gujarat manufacturers',
       'Built for manufacturers across Gujarat',
+      'Interactive growth system',
+      'Website categories',
       'Website Building',
+      'Company Profile Website',
+      'Product Catalogue Website',
+      'Catalogue categories',
       'Catalogue Building',
+      'Category-wise Product Catalogue',
       'WhatsApp Bots & Automation',
-      'IndiaMART Improvement',
+      'WhatsApp Catalogue Bot',
+      'Automation Tools & Simple Software',
+      'IndiaMART Listing Improvement',
       'Google Business Profile Improvement',
-      'SEO Starter Pack',
+      'SEO Improvement Starter',
       'Package Maker',
+      'Selected package includes',
       'Full Digital Presence Pack'
     ];
     const forbiddenText = [
@@ -43,9 +52,11 @@ async function inspectViewport(page, viewport) {
       missingText: requiredText.filter((text) => !bodyText.includes(text)),
       forbiddenText: forbiddenText.filter((text) => bodyText.includes(text)),
       productTabCount: document.querySelectorAll('[data-product-tab]').length,
+      heroFocusTabCount: document.querySelectorAll('[data-hero-focus-tab]').length,
       scatteredProductMenuCount: document.querySelectorAll('[data-product-menu] .product-menu-card').length,
       packageMakerCheckedCount: document.querySelectorAll('[data-package-option]:checked').length,
       packageSuggestion: document.querySelector('[data-package-result]')?.textContent?.trim() || '',
+      selectedPackageItems: Array.from(document.querySelectorAll('[data-selection-pill]')).map((item) => item.textContent.trim()),
       heroTitleAnimation: getComputedStyle(document.querySelector('#hero-title')).animationName,
       hasHorizontalScroll: document.documentElement.scrollWidth > window.innerWidth + 2
     };
@@ -75,9 +86,13 @@ async function main() {
     if (result.missingText.length) failures.push(`${name}: missing text ${result.missingText.join(', ')}`);
     if (result.forbiddenText.length) failures.push(`${name}: forbidden text still visible ${result.forbiddenText.join(', ')}`);
     if (result.productTabCount < 5) failures.push(`${name}: product tabs missing`);
+    if (result.heroFocusTabCount < 5) failures.push(`${name}: hero animation tabs missing`);
     if (result.scatteredProductMenuCount > 0) failures.push(`${name}: duplicated product menu should be removed`);
     if (result.packageMakerCheckedCount < 2) failures.push(`${name}: package maker defaults missing`);
     if (!result.packageSuggestion.includes('Full Digital Presence Pack')) failures.push(`${name}: package suggestion missing expected default`);
+    if (!result.selectedPackageItems.includes('Website') || !result.selectedPackageItems.includes('Google Business Profile')) {
+      failures.push(`${name}: selected package list missing expected default items`);
+    }
     if (!result.heroTitleAnimation || result.heroTitleAnimation === 'none') failures.push(`${name}: hero title has no first-view animation`);
     if (result.hasHorizontalScroll) failures.push(`${name}: horizontal scroll detected`);
   }

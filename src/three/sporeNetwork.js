@@ -69,10 +69,14 @@ function createProductOrbit(config) {
   const pivot = new THREE.Group();
   const productMeshes = [];
   const productMaterials = [];
+  const beamMaterials = [];
+  const beamGeometries = [];
+  const panelMaterials = [];
 
   const markerGeometry = new THREE.IcosahedronGeometry(config.desktop ? 0.34 : 0.27, 2);
   const ringGeometry = new THREE.TorusGeometry(config.desktop ? 0.56 : 0.42, 0.01, 8, 48);
   const barGeometry = new THREE.BoxGeometry(config.desktop ? 0.9 : 0.62, 0.028, 0.028);
+  const panelGeometry = new THREE.PlaneGeometry(config.desktop ? 1.38 : 1.02, config.desktop ? 0.72 : 0.54);
 
   focusOrder.forEach((id, index) => {
     const angle = (index / focusOrder.length) * Math.PI * 2;
@@ -84,25 +88,67 @@ function createProductOrbit(config) {
     );
 
     const material = makeBasicMaterial(focusColors[id], id === 'website' ? 0.95 : 0.45);
+    const panelMaterial = new THREE.MeshBasicMaterial({
+      color: focusColors[id],
+      transparent: true,
+      opacity: id === 'website' ? 0.18 : 0.055,
+      wireframe: true,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    const beamGeometry = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(0, 0, 0),
+      group.position.clone()
+    ]);
+    const beamMaterial = new THREE.LineBasicMaterial({
+      color: focusColors[id],
+      transparent: true,
+      opacity: id === 'website' ? 0.38 : 0.075,
+      blending: THREE.AdditiveBlending
+    });
+    const beam = new THREE.Line(beamGeometry, beamMaterial);
     const marker = new THREE.Mesh(markerGeometry, material);
     const ring = new THREE.Mesh(ringGeometry, material);
     const bar = new THREE.Mesh(barGeometry, material);
+    const panel = new THREE.Mesh(panelGeometry, panelMaterial);
     ring.rotation.x = Math.PI / 2;
     bar.position.x = config.desktop ? 0.74 : 0.55;
-    group.add(marker, ring, bar);
+    panel.position.z = -0.16;
+    panel.rotation.z = index % 2 === 0 ? 0.08 : -0.08;
+    group.add(panel, marker, ring, bar);
+    pivot.add(beam);
     pivot.add(group);
     productMeshes.push(group);
     productMaterials.push(material);
+    beamMaterials.push(beamMaterial);
+    beamGeometries.push(beamGeometry);
+    panelMaterials.push(panelMaterial);
   });
 
   return {
     pivot,
     productMeshes,
     productMaterials,
+    beamMaterials,
+    beamGeometries,
+    panelMaterials,
     markerGeometry,
     ringGeometry,
-    barGeometry
+    barGeometry,
+    panelGeometry
   };
+}
+
+function disposeProductOrbit(productOrbit) {
+  productOrbit.productMaterials.forEach((material) => material.dispose());
+  productOrbit.beamMaterials.forEach((material) => material.dispose());
+  productOrbit.panelMaterials.forEach((material) => material.dispose());
+  productOrbit.beamGeometries.forEach((geometry) => geometry.dispose());
+  productOrbit.markerGeometry.dispose();
+  productOrbit.ringGeometry.dispose();
+  productOrbit.barGeometry.dispose();
+  productOrbit.panelGeometry.dispose();
 }
 
 export function createSporeNetwork(canvas) {
@@ -193,6 +239,14 @@ export function createSporeNetwork(canvas) {
       material.opacity = index === activeIndex ? 0.96 : 0.34;
       material.color.setHex(index === activeIndex ? color : focusColors[focusOrder[index]]);
     });
+    productOrbit.beamMaterials.forEach((material, index) => {
+      material.opacity = index === activeIndex ? 0.38 : 0.075;
+      material.color.setHex(index === activeIndex ? color : focusColors[focusOrder[index]]);
+    });
+    productOrbit.panelMaterials.forEach((material, index) => {
+      material.opacity = index === activeIndex ? 0.18 : 0.055;
+      material.color.setHex(index === activeIndex ? color : focusColors[focusOrder[index]]);
+    });
   };
 
   const onPointerMove = (event) => {
@@ -206,10 +260,7 @@ export function createSporeNetwork(canvas) {
 
   const rebuildOrbit = () => {
     group.remove(productOrbit.pivot);
-    productOrbit.productMaterials.forEach((material) => material.dispose());
-    productOrbit.markerGeometry.dispose();
-    productOrbit.ringGeometry.dispose();
-    productOrbit.barGeometry.dispose();
+    disposeProductOrbit(productOrbit);
     productOrbit = createProductOrbit(config);
     group.add(productOrbit.pivot);
     setFocus(activeFocus);
@@ -247,6 +298,8 @@ export function createSporeNetwork(canvas) {
       mesh.scale.setScalar(isActive ? 1.18 + Math.sin(elapsed * 1.7) * 0.04 : 0.92);
       mesh.rotation.y = elapsed * (0.22 + index * 0.03);
       mesh.rotation.x = elapsed * 0.08;
+      productOrbit.beamMaterials[index].opacity = isActive ? 0.31 + Math.sin(elapsed * 2.1) * 0.08 : 0.075;
+      productOrbit.panelMaterials[index].opacity = isActive ? 0.14 + Math.sin(elapsed * 1.5) * 0.04 : 0.055;
     });
 
     renderer.render(scene, camera);
@@ -272,10 +325,7 @@ export function createSporeNetwork(canvas) {
       lineGeometry.dispose();
       coreGeometry.dispose();
       haloGeometry.dispose();
-      productOrbit.markerGeometry.dispose();
-      productOrbit.ringGeometry.dispose();
-      productOrbit.barGeometry.dispose();
-      productOrbit.productMaterials.forEach((material) => material.dispose());
+      disposeProductOrbit(productOrbit);
       nodeMaterial.dispose();
       lineMaterial.dispose();
       coreMaterial.dispose();

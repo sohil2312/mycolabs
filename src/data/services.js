@@ -4,37 +4,41 @@ export const productTabs = [
     label: 'Websites',
     title: 'Website Building',
     kicker: 'Fast buyer trust',
+    categoryLabel: 'Website categories',
+    sceneLabel: 'Website system',
     summary: 'We build simple, fast websites that explain who you are, what you sell, and how a buyer can contact you.',
     examples: [
       {
-        name: 'Starter Website',
+        name: 'Company Profile Website',
         description: 'One clean page with company intro, products, WhatsApp, Google Maps, and inquiry buttons.'
       },
       {
-        name: 'Catalogue Website',
+        name: 'Product Catalogue Website',
         description: 'Product categories, product cards, photos, specs, and quote buttons for manufacturers with multiple items.'
       },
       {
-        name: 'Growth Website',
+        name: 'SEO Growth Website',
         description: 'A stronger website with SEO pages, analytics, lead paths, and better product discovery.'
       }
     ],
     chips: ['Company story', 'Product sections', 'WhatsApp CTA', 'Google Maps', 'Basic SEO'],
-    featured: 'Catalogue Website'
+    featured: 'Product Catalogue Website'
   },
   {
     id: 'catalogue',
     label: 'Catalogues',
     title: 'Catalogue Building',
     kicker: 'Sales-ready product proof',
+    categoryLabel: 'Catalogue categories',
+    sceneLabel: 'Catalogue system',
     summary: 'We organize your products into clear catalogues that are easy to share with buyers on WhatsApp, email, and sales visits.',
     examples: [
       {
-        name: 'PDF Sales Catalogue',
+        name: 'PDF Product Catalogue',
         description: 'A polished PDF with product photos, specifications, use cases, and inquiry details.'
       },
       {
-        name: 'Category Catalogue',
+        name: 'Category-wise Product Catalogue',
         description: 'Products divided by category so buyers can find the right item quickly.'
       },
       {
@@ -50,18 +54,20 @@ export const productTabs = [
     label: 'WhatsApp',
     title: 'WhatsApp Bots & Automation',
     kicker: 'Quick replies, fewer missed leads',
+    categoryLabel: 'WhatsApp bot examples',
+    sceneLabel: 'Reply flow',
     summary: 'We set up simple WhatsApp flows that answer common questions, collect buyer details, and help your team follow up.',
     examples: [
+      {
+        name: 'WhatsApp Catalogue Bot',
+        description: 'Shares product categories, catalogue links, and inquiry buttons when a buyer messages.'
+      },
       {
         name: 'WhatsApp Auto Reply Bot',
         description: 'Replies with catalogue links, location, timing, and basic product information when your team is busy.'
       },
       {
-        name: 'Lead Follow-up Automation',
-        description: 'Keeps new inquiries organized with reminders so serious buyers are not forgotten.'
-      },
-      {
-        name: 'Order/Inquiry Form Flow',
+        name: 'Inquiry Collection Bot',
         description: 'Collects product name, quantity, location, and callback request in a simple step-by-step flow.'
       }
     ],
@@ -73,10 +79,12 @@ export const productTabs = [
     label: 'Growth',
     title: 'Marketplace & Search Growth',
     kicker: 'Better discovery',
+    categoryLabel: 'Search improvement products',
+    sceneLabel: 'Search presence',
     summary: 'We improve the places buyers already check before calling: IndiaMART, Google Business Profile, and search results.',
     examples: [
       {
-        name: 'IndiaMART Improvement',
+        name: 'IndiaMART Listing Improvement',
         description: 'Cleaner product listings, stronger descriptions, better photos, and a smoother inquiry path.'
       },
       {
@@ -84,7 +92,7 @@ export const productTabs = [
         description: 'Profile cleanup, product/service updates, photos, posts, and a simple review request path.'
       },
       {
-        name: 'SEO Starter Pack',
+        name: 'SEO Improvement Starter',
         description: 'Page titles, descriptions, local keywords, headings, and structure that help your website become search-ready.'
       }
     ],
@@ -94,12 +102,18 @@ export const productTabs = [
   {
     id: 'automation',
     label: 'Tools',
-    title: 'Simple Software Tools',
+    title: 'Automation Tools & Simple Software',
     kicker: 'Daily work made easier',
+    categoryLabel: 'Automation and software examples',
+    sceneLabel: 'Work tools',
     summary: 'We build small tools that help you track leads, collect quote details, and request reviews without complex software.',
     examples: [
       {
-        name: 'Lead Tracker',
+        name: 'Lead Follow-up Automation',
+        description: 'Keeps new inquiries organized with reminders so serious buyers are not forgotten.'
+      },
+      {
+        name: 'Lead Tracker Dashboard',
         description: 'A simple dashboard or sheet for buyer name, product, status, next follow-up, and owner.'
       },
       {
@@ -107,7 +121,7 @@ export const productTabs = [
         description: 'A clean form that turns buyer needs into organized quote details for your team.'
       },
       {
-        name: 'Review Request Tool',
+        name: 'Review Request Automation',
         description: 'A simple WhatsApp-ready flow to ask happy customers for Google reviews.'
       }
     ],

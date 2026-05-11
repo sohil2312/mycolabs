@@ -47,6 +47,7 @@ async function inspect(page, name, viewport) {
     const cta = document.querySelector('.hero-actions').getBoundingClientRect();
     const products = document.querySelector('#products').getBoundingClientRect();
     const activeTab = document.querySelector('[data-product-tab][aria-selected="true"]')?.textContent?.trim() || '';
+    const heroFocusTabCount = document.querySelectorAll('[data-hero-focus-tab]').length;
 
     return {
       canvasWidth: canvas.width,
@@ -59,6 +60,7 @@ async function inspect(page, name, viewport) {
       cta,
       products,
       activeTab,
+      heroFocusTabCount,
       scrollWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth
     };
@@ -104,6 +106,21 @@ async function inspect(page, name, viewport) {
     };
   });
 
+  await page.locator('[data-hero-focus-tab="growth"]').click();
+  await page.waitForTimeout(450);
+  const heroFocusState = await page.evaluate(() => {
+    const activeHeroTab = document.querySelector('[data-hero-focus-tab][aria-pressed="true"]');
+    const isMobile = window.matchMedia('(max-width: 920px)').matches;
+    const activeTitle = isMobile
+      ? document.querySelector('[data-product-mobile-panel].is-active [data-product-title]')?.textContent?.trim() || ''
+      : document.querySelector('[data-product-detail] [data-product-title]')?.textContent?.trim() || '';
+    return {
+      activeHeroTab: activeHeroTab?.textContent?.trim() || '',
+      activeTitle,
+      heroStatusLabel: document.querySelector('[data-hero-status-label]')?.textContent?.trim() || ''
+    };
+  });
+
   await page.locator('#package-maker').scrollIntoViewIfNeeded();
   await page.waitForTimeout(850);
   const packageState = await page.evaluate(() => {
@@ -113,6 +130,7 @@ async function inspect(page, name, viewport) {
       visible: rect.top < window.innerHeight && rect.bottom > 0 && getComputedStyle(card).opacity !== '0',
       selectedCount: document.querySelectorAll('[data-package-option]:checked').length,
       result: document.querySelector('[data-package-result]')?.textContent?.trim() || '',
+      selectedItems: Array.from(document.querySelectorAll('[data-selection-pill]')).map((item) => item.textContent.trim()),
       top: rect.top,
       bottom: rect.bottom
     };
@@ -125,6 +143,7 @@ async function inspect(page, name, viewport) {
     productsState,
     tabState,
     packageState,
+    heroFocusState,
     ...result
   };
 }
@@ -158,6 +177,7 @@ async function main() {
     if (result.second.frames <= result.first.frames) failures.push(`${name}: render frame counter did not advance`);
     if (result.second.rotation === result.first.rotation) failures.push(`${name}: scene rotation did not advance`);
     if (result.scrollWidth > result.viewportWidth + 2) failures.push(`${name}: horizontal scroll detected`);
+    if (result.heroFocusTabCount < 5) failures.push(`${name}: hero animation tabs missing`);
     if (result.heroTitle.right > result.viewportWidth + 2 || result.heroTitle.left < -2) failures.push(`${name}: hero title outside viewport`);
     if (result.cta.right > result.viewportWidth + 2 || result.cta.left < -2) failures.push(`${name}: hero CTA outside viewport`);
     if (result.products.top < result.header.bottom && result.products.bottom > result.header.top) failures.push(`${name}: header overlaps products at load`);
@@ -165,11 +185,17 @@ async function main() {
     if (!result.productsState.activeTitle.includes('Website Building')) failures.push(`${name}: default product tab content missing`);
     if (!result.tabState.activeTab.includes('Catalogue')) failures.push(`${name}: catalogue tab did not become active`);
     if (!result.tabState.activeTitle.includes('Catalogue Building')) failures.push(`${name}: catalogue tab content missing`);
+    if (!result.heroFocusState.activeHeroTab.includes('Growth')) failures.push(`${name}: hero growth focus tab did not become active`);
+    if (!result.heroFocusState.activeTitle.includes('Marketplace & Search Growth')) failures.push(`${name}: hero focus tab did not update product detail`);
+    if (!result.heroFocusState.heroStatusLabel.includes('Marketplace & Search Growth')) failures.push(`${name}: hero focus status did not update`);
     if (name === 'mobile' && !result.tabState.mobilePanelVisible) failures.push(`${name}: active mobile product detail is not visible below selected product`);
     if (name === 'mobile' && (result.tabState.mobilePanelGap === null || result.tabState.mobilePanelGap > 24)) failures.push(`${name}: active product detail is too far from selected product`);
     if (!result.packageState.visible) failures.push(`${name}: package maker not visible after scroll`);
     if (result.packageState.selectedCount < 2) failures.push(`${name}: package maker default selections missing`);
     if (!result.packageState.result.includes('Full Digital Presence Pack')) failures.push(`${name}: package maker result missing`);
+    if (!result.packageState.selectedItems.includes('Website') || !result.packageState.selectedItems.includes('Google Business Profile')) {
+      failures.push(`${name}: selected package list missing expected defaults`);
+    }
   }
   if (errors.length) failures.push(`console errors: ${errors.join(' | ')}`);
 

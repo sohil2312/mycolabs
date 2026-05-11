@@ -56,3 +56,14 @@
 - [x] Run final `npm run test:smoke`.
 - [x] Run final `npm run test:visual`.
 - [x] Commit implementation with message `feat: revise myco labs product website`.
+
+## Task 6: Awwwards-Inspired Interaction Pass
+
+**Files:** `index.html`, `src/data/services.js`, `src/main.js`, `src/styles.css`, `src/three/sporeNetwork.js`, tests, docs.
+
+- [x] Use `We Enable | Digital Engineers` as the primary Awwwards-style direction.
+- [x] Rename website and catalogue examples into clearer category products.
+- [x] Add hero `Interactive growth system` tabs that control product focus.
+- [x] Add visible selected-package feedback to the Package Maker.
+- [x] Add active beams and wireframe panels to the product-orbit Three.js scene.
+- [x] Extend smoke and visual tests for the new interaction/content requirements.
