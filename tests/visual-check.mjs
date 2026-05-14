@@ -46,8 +46,19 @@ async function inspect(page, name, viewport) {
     const heroTitle = document.querySelector('#hero-title').getBoundingClientRect();
     const cta = document.querySelector('.hero-actions').getBoundingClientRect();
     const products = document.querySelector('#products').getBoundingClientRect();
-    const activeTab = document.querySelector('[data-product-tab][aria-selected="true"]')?.textContent?.trim() || '';
+    const activeTab = document.querySelector('[data-product-tab][aria-pressed="true"]')?.textContent?.trim() || '';
     const heroFocusTabCount = document.querySelectorAll('[data-hero-focus-tab]').length;
+    const smallTouchTargets = Array.from(document.querySelectorAll('.nav-cta, .button, .hero-focus-tab, .product-tab, .package-option'))
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          label: element.textContent.trim().replace(/\s+/g, ' ').slice(0, 40),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height)
+        };
+      })
+      .filter((item) => item.width > 0 && item.height > 0)
+      .filter((item) => item.width < 44 || item.height < 44);
 
     return {
       canvasWidth: canvas.width,
@@ -61,6 +72,9 @@ async function inspect(page, name, viewport) {
       products,
       activeTab,
       heroFocusTabCount,
+      ariaSelectedCount: document.querySelectorAll('[aria-selected]').length,
+      tablistRoleCount: document.querySelectorAll('[role="tablist"]').length,
+      smallTouchTargets,
       scrollWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth
     };
@@ -89,7 +103,7 @@ async function inspect(page, name, viewport) {
   await page.waitForTimeout(350);
   const tabState = await page.evaluate(() => {
     const isMobile = window.matchMedia('(max-width: 920px)').matches;
-    const activeButton = document.querySelector('[data-product-tab][aria-selected="true"]');
+    const activeButton = document.querySelector('[data-product-tab][aria-pressed="true"]');
     const mobilePanel = document.querySelector('[data-product-mobile-panel].is-active');
     const desktopTitle = document.querySelector('[data-product-detail] [data-product-title]')?.textContent?.trim() || '';
     const activeTitle = isMobile
@@ -178,6 +192,11 @@ async function main() {
     if (result.second.rotation === result.first.rotation) failures.push(`${name}: scene rotation did not advance`);
     if (result.scrollWidth > result.viewportWidth + 2) failures.push(`${name}: horizontal scroll detected`);
     if (result.heroFocusTabCount < 5) failures.push(`${name}: hero animation tabs missing`);
+    if (result.ariaSelectedCount > 0) failures.push(`${name}: stale aria-selected attributes found`);
+    if (result.tablistRoleCount > 0) failures.push(`${name}: stale tablist role found on product accordion`);
+    if (name === 'mobile' && result.smallTouchTargets.length) {
+      failures.push(`${name}: small touch targets ${JSON.stringify(result.smallTouchTargets)}`);
+    }
     if (result.heroTitle.right > result.viewportWidth + 2 || result.heroTitle.left < -2) failures.push(`${name}: hero title outside viewport`);
     if (result.cta.right > result.viewportWidth + 2 || result.cta.left < -2) failures.push(`${name}: hero CTA outside viewport`);
     if (result.products.top < result.header.bottom && result.products.bottom > result.header.top) failures.push(`${name}: header overlaps products at load`);

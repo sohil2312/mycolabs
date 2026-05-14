@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-const desktopQuery = '(min-width: 768px)';
+const desktopQuery = '(min-width: 1025px)';
 
 const focusOrder = ['website', 'catalogue', 'whatsapp', 'growth', 'automation'];
 const focusColors = {
@@ -19,11 +19,11 @@ function getConfig() {
   const desktop = window.matchMedia(desktopQuery).matches;
   return {
     desktop,
-    nodeCount: desktop ? 120 : 54,
-    radius: desktop ? 7.4 : 5.4,
-    linkDistance: desktop ? 2.25 : 1.85,
-    orbitRadius: desktop ? 4.7 : 3.45,
-    pixelRatio: Math.min(window.devicePixelRatio || 1, desktop ? 1.8 : 1.35)
+    nodeCount: desktop ? 120 : 36,
+    radius: desktop ? 7.4 : 4.8,
+    linkDistance: desktop ? 2.25 : 1.72,
+    orbitRadius: desktop ? 4.7 : 3.05,
+    pixelRatio: Math.min(window.devicePixelRatio || 1, desktop ? 1.8 : 1.12)
   };
 }
 
@@ -168,9 +168,9 @@ export function createSporeNetwork(canvas) {
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
+    antialias: config.desktop,
     alpha: true,
-    powerPreference: 'high-performance',
+    powerPreference: config.desktop ? 'high-performance' : 'low-power',
     preserveDrawingBuffer: new URLSearchParams(window.location.search).has('verifyCanvas')
   });
   renderer.setClearColor(0x000000, 0);

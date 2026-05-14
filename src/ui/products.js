@@ -41,7 +41,7 @@ function setActiveProduct(productId, network) {
   document.querySelectorAll('[data-product-tab]').forEach((button) => {
     const active = button.dataset.productTab === product.id;
     button.classList.toggle('is-active', active);
-    button.setAttribute('aria-selected', String(active));
+    button.setAttribute('aria-pressed', String(active));
   });
   document.querySelectorAll('[data-product-mobile-panel]').forEach((panel) => {
     panel.classList.toggle('is-active', panel.dataset.productMobilePanel === product.id);
@@ -89,7 +89,7 @@ export function renderProducts(network) {
         class="product-tab ${index === 0 ? 'is-active' : ''}"
         type="button"
         data-product-tab="${escapeHtml(product.id)}"
-        aria-selected="${index === 0 ? 'true' : 'false'}"
+        aria-pressed="${index === 0 ? 'true' : 'false'}"
       >
         <span>${String(index + 1).padStart(2, '0')}</span>
         ${escapeHtml(product.label)}
