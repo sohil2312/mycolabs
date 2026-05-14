@@ -69,33 +69,41 @@ SITE_URL=http://127.0.0.1:4173/ npm run test:smoke
 ├── public/
 │   └── image.png
 ├── src/
+│   ├── config.js
 │   ├── main.js
 │   ├── styles.css
 │   ├── data/
 │   │   └── services.js
+│   ├── ui/
+│   │   ├── packageMaker.js
+│   │   ├── products.js
+│   │   └── sections.js
 │   ├── three/
 │   │   └── sporeNetwork.js
 │   └── utils/
+│       ├── html.js
 │       └── motion.js
 ├── tests/
 │   ├── site-smoke.test.mjs
 │   └── visual-check.mjs
 ├── docs/
-│   └── visual-asset-prompts.md
-├── MycoLabs_Master_Progress.md
-├── MycoLabs_Follow_Up_Tracker.md
-├── dist/
-├── test-artifacts/
-└── website and logos/
-    └── image.png
+│   ├── ARCHITECTURE.md
+│   └── DESIGN.md
+├── dist/              # ignored build output
+└── test-artifacts/    # ignored visual test output
 ```
 
 ## Key Files
 
 - `index.html` defines the page shell, metadata, semantic sections, navigation, CTAs, and data hook elements used by JavaScript.
-- `src/main.js` renders product tabs, product details, package options, process steps, growth cards, and connects UI selections to the Three.js scene.
+- `src/main.js` initializes the app, creates the Three.js scene, renders UI modules, and starts shared page behavior.
+- `src/config.js` stores shared runtime constants such as the WhatsApp URL used by JavaScript-rendered CTAs.
 - `src/data/services.js` stores the current product/service copy, package options, package result labels, process steps, and growth signals.
+- `src/ui/products.js` renders hero focus controls, product tabs, product detail cards, and product selection behavior.
+- `src/ui/packageMaker.js` renders package options and updates the package recommendation state.
+- `src/ui/sections.js` renders the process timeline and growth signal cards.
 - `src/three/sporeNetwork.js` builds the WebGL product-orbit animation with Three.js and exposes `setFocus()` and `destroy()` methods.
+- `src/utils/html.js` contains the shared HTML escaping helper for string-rendered UI.
 - `src/utils/motion.js` handles header scroll state and reveal-on-scroll behavior.
 - `src/styles.css` contains the complete visual system and responsive layout.
 - `public/image.png` is used as the low-opacity page background image in CSS.
@@ -123,5 +131,5 @@ SITE_URL=http://127.0.0.1:4173/ npm run test:smoke
 - Do not describe this as a React or Next.js app unless the codebase changes.
 - Keep the product copy in `src/data/services.js` aligned with the live sections rendered by `src/main.js`.
 - The WhatsApp number is currently a placeholder: `910000000000`.
-- Existing project notes list replacing the placeholder WhatsApp number and adding real client product categories as pending work.
+- Local agent notes, progress trackers, generated docs, draft assets, build output, and test screenshots are ignored by `.gitignore`.
 - Avoid adding public pricing unless the positioning docs are changed; the current site uses a Package Maker without public amounts.
