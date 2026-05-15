@@ -4,15 +4,19 @@ import { renderHeroFocusTabs, renderProducts } from './ui/products.js';
 import { renderGrowthSignals, renderProcess } from './ui/sections.js';
 import { initHeaderState, initReveals } from './utils/motion.js';
 
-function shouldLoadSporeNetwork() {
+function isCanvasVerification() {
   const params = new URLSearchParams(window.location.search);
-  if (params.has('verifyCanvas')) return true;
-  return !window.matchMedia('(pointer: coarse) and (max-width: 1024px)').matches;
+  return params.has('verifyCanvas');
+}
+
+function shouldLoadSporeNetwork() {
+  if (isCanvasVerification()) return true;
+  return !window.matchMedia('(pointer: coarse), (max-width: 920px)').matches;
 }
 
 function scheduleSporeNetwork(canvas, network) {
   if (!canvas || !shouldLoadSporeNetwork()) return;
-  const verifyCanvas = new URLSearchParams(window.location.search).has('verifyCanvas');
+  const verifyCanvas = isCanvasVerification();
 
   const load = async () => {
     const { createSporeNetwork } = await import('./three/sporeNetwork.js');
@@ -37,6 +41,10 @@ function scheduleSporeNetwork(canvas, network) {
 function init() {
   const canvas = document.querySelector('#hero-canvas');
   const network = { destroy() {}, setFocus() {} };
+
+  if (isCanvasVerification()) {
+    document.documentElement.classList.add('verify-canvas');
+  }
 
   renderHeroFocusTabs(network);
   renderProducts(network);

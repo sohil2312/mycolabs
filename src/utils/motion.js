@@ -20,6 +20,8 @@ export function initReveals() {
     return;
   }
 
+  document.documentElement.classList.add('js-reveals');
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {

@@ -115,6 +115,12 @@ button {
   pointer-events: none;
 }
 
+@media (pointer: coarse), (max-width: 920px) {
+  html:not(.verify-canvas) #hero-canvas {
+    display: none;
+  }
+}
+
 main {
   position: relative;
   z-index: 1;
@@ -797,13 +803,18 @@ p {
 }
 
 .reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.js-reveals .reveal {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 600ms ease, transform 600ms ease;
   transition-delay: var(--delay, 0ms);
 }
 
-.reveal.is-visible {
+.js-reveals .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -1115,7 +1126,7 @@ p {
     backdrop-filter: none;
   }
 
-  .reveal {
+  .js-reveals .reveal {
     transform: none;
     transition: opacity 360ms ease;
   }
@@ -1147,7 +1158,7 @@ p {
     transition-duration: 0.01ms !important;
   }
 
-  .reveal {
+  .js-reveals .reveal {
     opacity: 1;
     transform: none;
   }

@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "report:lighthouse": "node scripts/lighthouse-summary.mjs",
+    "audit:live": "node scripts/live-audit.mjs",
     "test:smoke": "node tests/site-smoke.test.mjs",
     "test:visual": "node tests/visual-check.mjs"
   },
