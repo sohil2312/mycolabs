@@ -42,6 +42,7 @@ function setActiveProduct(productId, network) {
     const active = button.dataset.productTab === product.id;
     button.classList.toggle('is-active', active);
     button.setAttribute('aria-pressed', String(active));
+    button.setAttribute('aria-expanded', String(active));
   });
   document.querySelectorAll('[data-product-mobile-panel]').forEach((panel) => {
     panel.classList.toggle('is-active', panel.dataset.productMobilePanel === product.id);
@@ -90,11 +91,13 @@ export function renderProducts(network) {
         type="button"
         data-product-tab="${escapeHtml(product.id)}"
         aria-pressed="${index === 0 ? 'true' : 'false'}"
+        aria-expanded="${index === 0 ? 'true' : 'false'}"
+        aria-controls="panel-${escapeHtml(product.id)}"
       >
         <span>${String(index + 1).padStart(2, '0')}</span>
         ${escapeHtml(product.label)}
       </button>
-      <div class="product-mobile-panel ${index === 0 ? 'is-active' : ''}" data-product-mobile-panel="${escapeHtml(product.id)}">
+      <div class="product-mobile-panel ${index === 0 ? 'is-active' : ''}" id="panel-${escapeHtml(product.id)}" data-product-mobile-panel="${escapeHtml(product.id)}">
         ${renderProductCard(product, 'product-mobile-card')}
       </div>
     </div>

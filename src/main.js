@@ -2,7 +2,7 @@ import './styles.css';
 import { renderPackageMaker } from './ui/packageMaker.js';
 import { renderHeroFocusTabs, renderProducts } from './ui/products.js';
 import { renderGrowthSignals, renderProcess } from './ui/sections.js';
-import { initHeaderState, initReveals } from './utils/motion.js';
+import { initHeaderState, initReveals, initAnimationPause } from './utils/motion.js';
 
 function isCanvasVerification() {
   const params = new URLSearchParams(window.location.search);
@@ -38,6 +38,32 @@ function scheduleSporeNetwork(canvas, network) {
   window.setTimeout(load, 300);
 }
 
+function initMobileNav() {
+  const toggle = document.querySelector('.mobile-nav-toggle');
+  const nav = document.getElementById('mobile-nav');
+  if (!toggle || !nav) return;
+
+  toggle.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    nav.hidden = expanded;
+  });
+
+  nav.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      toggle.setAttribute('aria-expanded', 'false');
+      nav.hidden = true;
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!toggle.contains(e.target) && !nav.contains(e.target)) {
+      toggle.setAttribute('aria-expanded', 'false');
+      nav.hidden = true;
+    }
+  }, true);
+}
+
 function init() {
   const canvas = document.querySelector('#hero-canvas');
   const network = { destroy() {}, setFocus() {} };
@@ -53,6 +79,8 @@ function init() {
   renderGrowthSignals();
   initHeaderState();
   initReveals();
+  initMobileNav();
+  initAnimationPause();
   scheduleSporeNetwork(canvas, network);
 
   window.addEventListener('pagehide', () => network.destroy(), { once: true });
